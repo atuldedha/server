@@ -109,12 +109,6 @@ router.post("/getuser", fetchUser, async (req, res) => {
       return res.status(401).json({ message: "User Not Found" });
     }
 
-    const match = await bcrypt.compare(password, foundUser.password);
-
-    if (!match) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
     res.status(200).json({ user: foundUser });
   } catch (err) {
     console.log(err);
