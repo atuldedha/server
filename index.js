@@ -14,6 +14,8 @@ app.use(cors(corsOptions));
 
 // Available Routes
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/search", require("./routes/searchHistory"));
+app.use("/api/checkout", require("./routes/checkout"));
 
 // once the app is connected to mongoDB start the server
 mongoose.connection.once("open", () => {
