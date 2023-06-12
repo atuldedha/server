@@ -4,12 +4,14 @@ const mongoose = require("mongoose");
 const connectDB = require("./db");
 const cors = require("cors");
 const corsOptions = require("./config/corsOptions");
+const cookieParser = require("cookie-parser");
 const PORT = 8080;
 
 const app = express();
 connectDB();
 app.use(express.json());
 app.use(cors(corsOptions));
+app.use(cookieParser());
 // function to connect to mongoDB atlas
 
 // Available Routes

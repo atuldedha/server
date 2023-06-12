@@ -9,20 +9,20 @@ const fetchUser = require("../middleware/fetchUser");
 router.post("/add-search", fetchUser, async (req, res) => {
   try {
     const userid = req.user.id;
-    const { id, searchTerm } = req.body;
+    const { searchTerm } = req.body;
 
     if (!userid) {
       return res.status(401).json({ message: "Not logged in" });
     }
 
-    const foundUser = await Search.findById(id).exec();
+    const foundUser = await Search.findOne({ userid }).exec();
 
     if (foundUser) {
       const searchItems = foundUser?.searchItem;
       console.log(searchItems);
       const duplicate = searchItems.find((item) => item === searchTerm);
 
-      if (userid !== foundUser?.userid) {
+      if (userid !== foundUser?.userid?.toString()) {
         return res
           .status(401)
           .json({ error: "Unauthorized", message: "Unauthorized" });
@@ -65,10 +65,8 @@ router.post("/add-search", fetchUser, async (req, res) => {
 // user search history @Get: search-history
 // Private Route
 router.get("/get-search-history", fetchUser, async (req, res) => {
-  const { id } = req.body;
   const userid = req.user.id;
-
-  const foundUser = await Search.findById(id).lean().exec();
+  const foundUser = await Search.findOne({ userid }).lean().exec();
 
   if (!userid) {
     return res.status(400).json({ error: "", message: "User not logged in" });
@@ -78,7 +76,7 @@ router.get("/get-search-history", fetchUser, async (req, res) => {
     return res.status(204).json({ message: "No Search History for the user" });
   }
 
-  if (userid !== foundUser?.userid) {
+  if (userid !== foundUser?.userid?.toString()) {
     return res
       .status(401)
       .json({ error: "Unauthorized", message: "Unauthorized" });

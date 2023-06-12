@@ -48,6 +48,25 @@ router.post(
             },
           };
           const authToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET);
+
+          //   creating secure cookie with refresh token
+          res.cookie("jwt", authToken, {
+            httpOnly: true, // only accessbile by browser
+            secure: true, //https
+            sameSite: "None", //cross-browser
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity of a refresh token. 1000ms=1s 1s*60= 1min, 1min*60=1hr, 1hr*24=1d, 1*7=7d
+          });
+
+          console.log(
+            res.cookie("jwt", authToken, {
+              httpOnly: true, // only accessbile by browser
+              secure: true, //https
+              sameSite: "None", //cross-browser
+              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity of a refresh token. 1000ms=1s 1s*60= 1min, 1min*60=1hr, 1hr*24=1d, 1*7=7d
+            }),
+            "hello"
+          );
+
           res.status(200).json({ authToken });
         })
         .catch((err) => res.status(401).json({ error: err?.message }));
@@ -91,6 +110,14 @@ router.post(
         },
       };
       const authToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET);
+
+      //   creating secure cookie with refresh token
+      res.cookie("jwt", authToken, {
+        httpOnly: true, // only accessbile by browser
+        secure: true, //https
+        sameSite: "None", //cross-browser
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity of a refresh token. 1000ms=1s 1s*60= 1min, 1min*60=1hr, 1hr*24=1d, 1*7=7d
+      });
 
       res.status(200).json({ authToken });
     } catch (err) {
