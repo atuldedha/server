@@ -50,28 +50,18 @@ router.post(
           const authToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET);
 
           //   creating secure cookie with refresh token
-          res.cookie("jwt", authToken, {
+          res.cookie("jwtToken", authToken, {
             httpOnly: true, // only accessbile by browser
             secure: true, //https
-            sameSite: "None", //cross-browser
+            sameSite: "none", //cross-browser
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity of a refresh token. 1000ms=1s 1s*60= 1min, 1min*60=1hr, 1hr*24=1d, 1*7=7d
           });
-
-          console.log(
-            res.cookie("jwt", authToken, {
-              httpOnly: true, // only accessbile by browser
-              secure: true, //https
-              sameSite: "None", //cross-browser
-              maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity of a refresh token. 1000ms=1s 1s*60= 1min, 1min*60=1hr, 1hr*24=1d, 1*7=7d
-            }),
-            "hello"
-          );
 
           res.status(200).json({ authToken });
         })
         .catch((err) => res.status(401).json({ error: err?.message }));
     } catch (err) {
-      res.status(503).json({ message: "Interval Server Error" });
+      res.status(500).json({ message: "Interval Server Error" });
       console.log(err);
     }
   }
@@ -112,17 +102,17 @@ router.post(
       const authToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET);
 
       //   creating secure cookie with refresh token
-      res.cookie("jwt", authToken, {
-        httpOnly: true, // only accessbile by browser
-        secure: true, //https
-        sameSite: "None", //cross-browser
+      res.cookie("jwtToken", authToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days validity of a refresh token. 1000ms=1s 1s*60= 1min, 1min*60=1hr, 1hr*24=1d, 1*7=7d
       });
 
       res.status(200).json({ authToken });
     } catch (err) {
       console.log(err);
-      res.status(503).json({ message: "Interval Server Error" });
+      res.status(500).json({ message: "Interval Server Error" });
     }
   }
 );
@@ -140,7 +130,33 @@ router.post("/getuser", fetchUser, async (req, res) => {
     res.status(200).json({ user: foundUser });
   } catch (err) {
     console.log(err);
-    res.status(503).json({ message: "Interval Server Error" });
+    res.status(500).json({ message: "Interval Server Error" });
+  }
+});
+
+// get user details using cookies
+// refresh user
+router.get("/refresh", async (req, res) => {
+  const { jwtToken } = req.cookies;
+
+  if (!jwtToken) {
+    return res.status(401).json({ message: "Unauthorised" });
+  }
+
+  try {
+    const decodedToken = jwt.verify(jwtToken, process.env.ACCESS_TOKEN_SECRET);
+
+    const { id } = decodedToken.user;
+
+    const foundUser = await User.findById(id).select("-password");
+    if (!foundUser) {
+      return res.status(401).json({ message: "User Not Found" });
+    }
+
+    res.status(200).json({ user: { foundUser, authToken: jwtToken } });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Interval Server Error" });
   }
 });
 

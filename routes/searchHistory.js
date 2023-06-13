@@ -9,8 +9,7 @@ const fetchUser = require("../middleware/fetchUser");
 router.post("/add-search", fetchUser, async (req, res) => {
   try {
     const userid = req.user.id;
-    const { searchTerm } = req.body;
-
+    const { searchTerm, category } = req.body;
     if (!userid) {
       return res.status(401).json({ message: "Not logged in" });
     }
@@ -19,8 +18,10 @@ router.post("/add-search", fetchUser, async (req, res) => {
 
     if (foundUser) {
       const searchItems = foundUser?.searchItem;
-      console.log(searchItems);
-      const duplicate = searchItems.find((item) => item === searchTerm);
+
+      const duplicate = searchItems.find(
+        (item) => item?.searchTerm === searchTerm && item?.category === category
+      );
 
       if (userid !== foundUser?.userid?.toString()) {
         return res
@@ -31,7 +32,9 @@ router.post("/add-search", fetchUser, async (req, res) => {
       if (duplicate) {
         return res.status(202).json({ message: "Already Present" });
       }
-      searchItems.push(searchTerm);
+
+      const searchObj = { searchTerm, category };
+      searchItems.push(searchObj);
 
       foundUser.searchItem = searchItems;
 
@@ -45,7 +48,7 @@ router.post("/add-search", fetchUser, async (req, res) => {
     }
     Search.create({
       userid: userid,
-      searchItem: [searchTerm],
+      searchItem: [{ searchTerm, category }],
     })
       .then((response) => {
         return res
