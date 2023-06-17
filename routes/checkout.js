@@ -59,7 +59,7 @@ router.post("/paypal-checkout/create-order", async (req, res) => {
   const dataToSend = { totalPrice, description };
   try {
     const order = await createOrder(dataToSend);
-    res.json(order);
+    res.status(200).json({ order });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error?.message });
@@ -67,7 +67,7 @@ router.post("/paypal-checkout/create-order", async (req, res) => {
 });
 
 // paypal router for capturing payment
-router.post("/paypal-checkout/capture-paypal-orderr", async (req, res) => {
+router.post("/paypal-checkout/capture-paypal-order", async (req, res) => {
   const { orderID } = req.body;
   try {
     const captureData = await capturePayment(orderID);
