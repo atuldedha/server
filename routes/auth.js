@@ -14,9 +14,14 @@ const fetchUser = require("../middleware/fetchUser");
 router.post(
   "/signup",
   [
-    body("firstName", "Please enter a valid name").isLength({ min: 3 }),
+    body(
+      "firstName",
+      "First name field must be more than 3 character's"
+    ).isLength({ min: 3 }),
     body("email", "Please enter a valid email").isEmail(),
-    body("password", "Please enter a valid password").isLength({ min: 5 }),
+    body("password", "Password must be more than 5 character's").isLength({
+      min: 5,
+    }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -27,7 +32,9 @@ router.post(
       const { username, firstName, lastName, email, password } = req.body;
       const foundUser = await User.findOne({ email }).exec();
       if (foundUser) {
-        return res.status(400).json({ message: "Email already exists" });
+        return res
+          .status(400)
+          .json({ message: "Email already exists, please login" });
       }
 
       // generating sal
@@ -61,7 +68,10 @@ router.post(
         })
         .catch((err) => res.status(401).json({ error: err?.message }));
     } catch (err) {
-      res.status(500).json({ message: "Interval Server Error" });
+      res.status(500).json({
+        error: "Internal Server Error",
+        message: "The issue is from our side, please try again in some time",
+      });
       console.log(err);
     }
   }
@@ -73,19 +83,23 @@ router.post(
   "/login",
   [
     body("email", "Please enter a valid email").isEmail(),
-    body("password", "Please enter a valid password").isLength({ min: 5 }),
+    body("password", "Password must be more than 5 character's").isLength({
+      min: 5,
+    }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ erros: errors.array() });
+      return res.status(400).json({ message: errors.array()?.[0]?.msg });
     }
     const { email, password } = req.body;
 
     try {
       const foundUser = await User.findOne({ email }).exec();
       if (!foundUser) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res
+          .status(400)
+          .json({ message: "This email is not registered with us" });
       }
 
       const match = await bcrypt.compare(password, foundUser.password);
@@ -112,7 +126,10 @@ router.post(
       res.status(200).json({ authToken });
     } catch (err) {
       console.log(err);
-      res.status(500).json({ message: "Interval Server Error" });
+      res.status(500).json({
+        error: "Internal Server Error",
+        message: "The issue is from our side, please try again in some time",
+      });
     }
   }
 );
@@ -130,7 +147,10 @@ router.post("/getuser", fetchUser, async (req, res) => {
     res.status(200).json({ user: foundUser });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Interval Server Error" });
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "The issue is from our side, please try again in some time",
+    });
   }
 });
 
@@ -140,7 +160,7 @@ router.get("/refresh", async (req, res) => {
   const { jwtToken } = req.cookies;
 
   if (!jwtToken) {
-    return res.status(401).json({ message: "Unauthorised" });
+    return res.status(401).json({ message: "Please login again" });
   }
 
   try {
@@ -156,7 +176,10 @@ router.get("/refresh", async (req, res) => {
     res.status(200).json({ user: { foundUser, authToken: jwtToken } });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Interval Server Error" });
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "The issue is from our side, please try again in some time",
+    });
   }
 });
 
