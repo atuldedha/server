@@ -9,6 +9,8 @@ const router = express.Router();
 
 // getting the middleware
 const fetchUser = require("../middleware/fetchUser");
+const FreeSearchesPerUser = require("../models/FreeSearchesPerUser");
+const FreeSeachesLeft = require("../models/FreeSeachesLeft");
 // create user POST: api/auth/signup
 // does not require auth
 router.post(
@@ -41,6 +43,10 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       const securePassword = await bcrypt.hash(password, salt);
 
+      const freeSearchesPerUser = await FreeSearchesPerUser.findById(
+        "649206bea2c4247b2a8ff0e7"
+      ).exec();
+
       User.create({
         username,
         firstName,
@@ -48,12 +54,18 @@ router.post(
         email,
         password: securePassword,
       })
-        .then((user) => {
+        .then(async (user) => {
           const data = {
             user: {
               id: user.id,
             },
           };
+
+          await FreeSeachesLeft.create({
+            userid: user.id,
+            freeSearchesLeft: freeSearchesPerUser?.freeSearchesNum,
+          });
+
           const authToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET);
 
           //   creating secure cookie with refresh token

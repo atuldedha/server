@@ -18,6 +18,7 @@ app.use(cookieParser());
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/search", require("./routes/searchHistory"));
 app.use("/api/checkout", require("./routes/checkout"));
+app.use("/api/free", require("./routes/searchesLeft"));
 
 // once the app is connected to mongoDB start the server
 mongoose.connection.once("open", () => {
